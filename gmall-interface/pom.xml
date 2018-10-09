@@ -3,14 +3,23 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>gmall</artifactId>
         <groupId>com.atguigu.gmall</groupId>
-        <version>1.0-SNAPSHOT</version>
+        <artifactId>gmall-parent</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../gmall-parent</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <description>保存所有接口</description>
+    <description>保存所有业务接口，不包含Mapper接口</description>
 
     <artifactId>gmall-interface</artifactId>
+    <dependencies>
+        <dependency>
+            <groupId>com.atguigu.gmall</groupId>
+            <artifactId>gmall-bean</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
+    </dependencies>
 
 
 </project>
