@@ -16,7 +16,7 @@
         <module>gmall-serviceutil</module>
         <module>gmall-user-web</module>
         <module>gmall-parent</module>
-        <module>gmall-user-service</module>
+        <module>gmall-movie-service</module>
     </modules>
     <packaging>pom</packaging>
     <description>聚合工程</description>
