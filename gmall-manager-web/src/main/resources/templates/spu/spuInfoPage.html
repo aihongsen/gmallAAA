@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en"  xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>spu信息编辑页面</title>
+</head>
+<body>
+
+<!-----------------弹出框----------------------------->
+<div id="spu_dlg" class="easyui-dialog" title="编辑spu" style="width:700px;height:520px;"
+     closed="true"  data-options="iconCls:'icon-save',resizable:true,modal:false" buttons="#spuBtns" >
+    <form id="spuForm">
+        <br/>
+        <label>spu名称:</label>
+        <input  id="spuName" name="spuName" class="easyui-textbox" data-options="" style="width:300px;"/>
+        <br/><br/>
+        <label>spu描述:</label>
+        <input  id="description" name="description" class="easyui-textbox" data-options="multiline:true" style="width:500px;height:100px"/>
+
+        <input id="spuId" name="spuId" type="hidden"/>
+        <br/><br/>
+
+        <!----------------商品图片列表 ----------------------->
+
+        <table id="spuImgDg" class="easyui-datagrid" title="商品图片列表"
+               data-options="singleSelect:true,method:'get',toolbar:'#spuImgTootbar',
+               idField:'id',view:detailview,detailFormatter:spuImgTabledetailFormatter" >
+            <thead>
+                <tr>
+                    <!--field:'id;快速使用id这一列的值 检索到当前行的索引-->
+                    <th data-options="field:'id',width:100">图片id</th>
+                    <th data-options="field:'imgName',width:200">图片名称</th>
+                    <th data-options="field:'imgUrl',width:100,align:'right',hidden:true">图片url</th>
+					<th data-options="field:'process',width:200,formatter:spuImgProcessCellFormatter">上传进度</th>
+                    <th data-options="field:'status',width:100,formatter:spuImgStatusCellFormatter">图片状态</th>
+                </tr>
+            </thead>
+        </table>
+
+        <!----------------图片列表工具栏----------------------->
+        <div id="spuImgTootbar" style="padding:5px;height:auto"  >
+            <div style="margin-bottom:5px">
+                <a href="#" id="spuImgAddBtn" class="easyui-linkbutton" iconCls="icon-add" plain="true">添加图片</a>
+                <a href="#" id="spuImgUploadBtn" class="easyui-linkbutton" iconCls="icon-save" plain="true" >图片上传</a>
+                <a href="#" class="easyui-linkbutton" iconCls="icon-remove" plain="true">删除</a>
+            </div>
+        </div>
+
+        <br/><br/>
+        <!----------------销售属性列表---------------------------->
+        <table id="spuSaleAttrDg" class="easyui-datagrid" title="销售属性列表"
+               data-options="singleSelect:true,method:'get',toolbar:'#spuSaleAttrTootbar'" >
+            <thead>
+                <tr>
+                    <th data-options="field:'id',width:100">销售属性id</th>
+                    <th data-options="field:'imgName',width:300">销售属性名称</th>
+                </tr>
+            </thead>
+        </table>
+
+        <!----------------销售属性列表工具栏----------------------->
+        <div id="spuSaleAttrTootbar" style="padding:5px;height:auto"  >
+            <div style="margin-bottom:5px">
+                <a href="#" id="spuSaleAttrAddBtn" class="easyui-linkbutton" iconCls="icon-add" plain="true">添加销售属性</a>
+                <a href="#" id="spuSaleAttrEditBtn" class="easyui-linkbutton" iconCls="icon-edit" plain="true">编辑销售属性</a>
+                <a href="#" class="easyui-linkbutton" iconCls="icon-remove" plain="true" >删除</a>
+            </div>
+        </div>
+
+
+    </form>
+</div>
+<!----------------弹出框的按钮组----------------------->
+<div id="spuBtns">
+    <a href="#" class="easyui-linkbutton">保 存</a>
+    <a href="#" class="easyui-linkbutton" onclick="$('#spu_dlg').dialog('close')">关 闭</a>
+</div>
+
+<div th:include="spu/spuSaleAttrPage"></div>
+
+<script language="javascript">
+    /*<![CDATA[*/
+         //2.
+
+
+        //1.弹出销售属性弹出框
+        $("#spuSaleAttrAddBtn").click(function(){
+            $("#spuSaleAttr_dlg").dialog('open');
+        });
+
+    //2.1创建webuploader的实例对象(直接复制的官方的参照文档)
+    // 初始化Web Uploader
+    var uploader = WebUploader.create({
+
+        // 选完文件后，是否自动上传。
+        auto: false,     //修改成false手动上传
+
+        // swf文件路径      //修改找到 Uploader.swf
+        swf: 'webuploader/Uploader.swf',
+
+        // 文件接收服务端。 //修改处理请求的Controller请求映射地址
+        server: 'file/upload',
+
+        // 选择文件的按钮。可选。
+        // 内部根据当前运行是创建，可能是input元素，也可能是flash.
+        pick: '#spuImgAddBtn',
+
+        // 只允许选择图片文件。
+        accept: {
+            title: 'Images',
+            extensions: 'gif,jpg,jpeg,bmp,png',
+            mimeTypes: 'image/*'
+        }
+    });
+
+    //2.2由于以上代码搭配会出现一个BUG 就是点击添加图片的界面weight：1；height：1 所以需要额外的处理
+    $("#spuImgAddBtn div:eq(0)").css({
+        width:'100%',height:'100%'
+    })
+
+    //2.3 监听webUpload 上传的几个事件
+    // 当有文件添加进来的时候,在图片的table中显示图片信息
+    uploader.on( 'fileQueued', function( file ) {
+        //给表格添加数据
+        $("#spuImgDg").datagrid('appendRow',{
+            id: file.id,            //图片ID
+            imgName: file.name,     //图片名字
+            imgUrl: file.imgUrl,    //图片地址
+            process: 0,             //上传进度 0
+            status:"等待上传"       //上传时候状态 显示为 等待上传
+        })
+
+    });
+
+    //2.4 文件上传过程中创建进度条实时显示。在图片的table中显示图片进度条信息
+    uploader.on( 'uploadProgress', function( file, percentage ) {
+        //当监听到图片上传改变进度条的状态
+        //进度条状态显示算法  value为0-1的数字   value * 10000 /100 得到的数在拼接一个%
+        //修改单元格中当前文件的上传进度
+            //0.先处理进度的数据因为进度数据值为0~1之间
+            var precent = Math.round(percentage*10000)/100;
+            //1.找到当前文件在那一行
+            var index = $("#spuImgDg").datagrid('getRowIndex',file.id);
+            //2.修改这行的process数据
+                $("#spuImgDg").datagrid('updateRow',{
+                    index: index,
+                    row: {
+                        process: precent,
+                        status: '正在上传'
+                    }
+
+                });
+    });
+
+    //2.5 文件上传成功，给item添加成功class, 用样式标记上传成功。
+    //参数response代表服务器的响应数据 也可以改成任意参数比如abc
+    uploader.on( 'uploadSuccess', function( file ,response) {
+
+        //1.找到当前文件在那一行
+        var index = $("#spuImgDg").datagrid('getRowIndex',file.id);
+        //2.修改这行的process数据
+        $("#spuImgDg").datagrid('updateRow',{
+            index: index,
+            row: {
+                status: '上传成功',
+                imgUrl: response._raw
+            }
+        });
+    });
+
+
+    /**
+     * value 为原本的数据 0
+     * row 当前行的所有数据
+     * index 当前行的索引
+     */
+    //自动以图片上传进度单元格格式化方法
+    function spuImgProcessCellFormatter(value,row,index) {
+            //参考datagrid的formater方法 需要有三个参数(value,row,index）
+        var processBar = $("<div></div>").progressbar({
+            value: value
+        });
+        var html_content = $("<div></div>").append(processBar).html();
+        return html_content;
+        
+    }
+    
+    //图片状态格式化方法
+    function spuImgStatusCellFormatter(value,row,index) {
+        if(value == '上传成功'){
+            return "<label style='color:green'>"+value+"</label>";
+        }
+        return "<label style='color:blue'>"+value+"</label>";
+    }
+
+    //图片上传单击事件
+    $("#spuImgUploadBtn").click(function () {
+        //webUpload功能上传
+        uploader.upload();
+    })
+    
+    
+    //表格详细视图
+    function spuImgTabledetailFormatter(rowIndex, rowData) {
+        // console.log(rowIndex)
+        // console.log(rowData)
+        return "<img src='"+rowData.imgUrl+"' style='width:150px;height: auto '/>";
+    }
+    /*]]>*/
+</script>
+</body>
+</html>
